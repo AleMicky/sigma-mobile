@@ -27,16 +27,33 @@ class _LoginFormCardState extends State<LoginFormCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF172B4D);
+    final subtitleColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+    final buttonBg = isDark ? AppTheme.accentGold : AppTheme.primary;
+    final buttonFg = isDark ? const Color(0xFF0A1931) : Colors.white;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : const Color(0xFFE2E8F0),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.35)
+                : const Color(0xFF0F172A).withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -45,18 +62,49 @@ class _LoginFormCardState extends State<LoginFormCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Iniciar sesión',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF172B4D),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Ingresa tus credenciales institucionales para continuar.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppTheme.accentGold.withValues(alpha: 0.14)
+                        : AppTheme.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.lock_person_rounded,
+                    size: 20,
+                    color: isDark ? AppTheme.accentGold : AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Iniciar sesión',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: titleColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Credenciales institucionales',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: subtitleColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             AuthTextField(
@@ -97,7 +145,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   _obscurePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: const Color(0xFF64748B),
+                  color: subtitleColor,
                 ),
               ),
               validator: (value) {
@@ -107,36 +155,38 @@ class _LoginFormCardState extends State<LoginFormCard> {
                 return null;
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 26),
             SizedBox(
               height: 54,
               child: FilledButton.icon(
                 onPressed: widget.isLoading ? null : widget.onSubmit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  disabledBackgroundColor: AppTheme.primary.withValues(
-                    alpha: 0.6,
-                  ),
+                  backgroundColor: buttonBg,
+                  foregroundColor: buttonFg,
+                  disabledBackgroundColor: buttonBg.withValues(alpha: 0.55),
+                  disabledForegroundColor: buttonFg.withValues(alpha: 0.8),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                   textStyle: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
                   ),
                 ),
                 icon: widget.isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.2,
-                          color: Colors.white,
+                          color: buttonFg,
                         ),
                       )
                     : const Icon(Icons.login_rounded),
                 label: Text(
-                  widget.isLoading ? 'Iniciando sesión...' : 'Iniciar sesión',
+                  widget.isLoading ? 'Iniciando sesión...' : 'Ingresar a SIGMA',
                 ),
               ),
             ),

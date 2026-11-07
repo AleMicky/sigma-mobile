@@ -31,6 +31,19 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF172B4D);
+    final labelColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+    final fillColor = isDark
+        ? const Color(0xFF0E1729)
+        : const Color(0xFFF8FAFC);
+    final borderColor = isDark
+        ? const Color(0xFF26354D)
+        : const Color(0xFFD8E1EC);
+    final focusColor = isDark ? AppTheme.accentGold : AppTheme.primary;
+
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -39,41 +52,51 @@ class AuthTextField extends StatelessWidget {
       autofillHints: autofillHints,
       onFieldSubmitted: onFieldSubmitted,
       validator: validator,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
-        color: Color(0xFF172B4D),
+        color: textColor,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: labelColor, fontSize: 14),
+        floatingLabelStyle: TextStyle(
+          color: focusColor,
+          fontWeight: FontWeight.w600,
+        ),
         hintText: hint,
-        prefixIcon: Icon(prefixIcon, color: AppTheme.primary, size: 22),
+        hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.65)),
+        prefixIcon: Icon(
+          prefixIcon,
+          color: isDark ? AppTheme.accentGold : AppTheme.primary,
+          size: 22,
+        ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: const Color(0xFFF8FAFC),
+        fillColor: fillColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFD8E1EC)),
+          borderSide: BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFD8E1EC)),
+          borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.primary, width: 1.8),
+          borderSide: BorderSide(color: focusColor, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red.shade600),
+          borderSide: BorderSide(color: Colors.red.shade500),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red.shade700, width: 1.8),
+          borderSide: BorderSide(color: Colors.red.shade600, width: 1.8),
         ),
       ),
     );

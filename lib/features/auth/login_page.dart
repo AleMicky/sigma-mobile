@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:sigma_mobile/app/theme/app_theme.dart';
 import 'package:sigma_mobile/features/auth/auth_service.dart';
 import 'package:sigma_mobile/features/auth/widgets/login_footer.dart';
 import 'package:sigma_mobile/features/auth/widgets/login_form_card.dart';
@@ -83,32 +84,147 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const LoginHeader(),
-                  const SizedBox(height: 24),
-                  LoginFormCard(
-                    formKey: _formKey,
-                    usernameController: _usernameController,
-                    passwordController: _passwordController,
-                    isLoading: _loading,
-                    onSubmit: _login,
+      body: Stack(
+        children: [
+          // Decoración ambiental institucional de fondo
+          Positioned(
+            top: -110,
+            right: -80,
+            child: IgnorePointer(
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppTheme.accentGold.withValues(
+                        alpha: isDark ? 0.14 : 0.16,
+                      ),
+                      AppTheme.accentGold.withValues(alpha: 0.0),
+                    ],
                   ),
-                  const SizedBox(height: 28),
-                  const LoginFooter(),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+          Positioned(
+            bottom: -120,
+            left: -90,
+            child: IgnorePointer(
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      (isDark ? const Color(0xFF1E40AF) : AppTheme.primary)
+                          .withValues(alpha: isDark ? 0.22 : 0.10),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // Barra superior con botón para alternar modo Normal / Dark
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Material(
+                        color: isDark
+                            ? AppTheme.darkSurface
+                            : Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => AppTheme.toggleTheme(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.10)
+                                    : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isDark
+                                      ? Icons.light_mode_rounded
+                                      : Icons.dark_mode_rounded,
+                                  size: 16,
+                                  color: isDark
+                                      ? AppTheme.accentGold
+                                      : AppTheme.primary,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isDark ? 'Modo claro' : 'Modo oscuro',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppTheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const LoginHeader(),
+                            const SizedBox(height: 20),
+                            LoginFormCard(
+                              formKey: _formKey,
+                              usernameController: _usernameController,
+                              passwordController: _passwordController,
+                              isLoading: _loading,
+                              onSubmit: _login,
+                            ),
+                            const SizedBox(height: 24),
+                            const LoginFooter(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
