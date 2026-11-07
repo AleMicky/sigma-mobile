@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sigma_mobile/app/router/app_router.dart';
 import 'package:sigma_mobile/app/theme/app_theme.dart';
+import 'package:sigma_mobile/features/auth/auth_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await AuthService.instance.initialize();
 
   runApp(const ProviderScope(child: SigmaApp()));
 }

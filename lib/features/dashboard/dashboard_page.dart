@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_mobile/app/theme/app_theme.dart';
+import 'package:sigma_mobile/features/auth/auth_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -10,6 +11,9 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int selectedIndex = 0;
+  bool isLoggingOut = false;
+
+  final authService = AuthService.instance;
 
   final modules = const [
     _Module(
@@ -34,6 +38,23 @@ class _DashboardPageState extends State<DashboardPage> {
     ),
   ];
 
+  String get userName =>
+      authService.user?['name']?.toString() ?? 'Usuario SIGMA';
+
+  String get username => authService.user?['username']?.toString() ?? '';
+
+  String get email => authService.user?['email']?.toString() ?? '';
+
+  List<String> get roles {
+    final value = authService.user?['roles'];
+
+    if (value is List) {
+      return value.map((role) => role.toString()).toList();
+    }
+
+    return [];
+  }
+
   void showPending(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -43,45 +64,101 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Future<void> logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Cerrar sesión'),
+          content: const Text('¿Estás seguro de que deseas cerrar tu sesión?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Cerrar sesión'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => isLoggingOut = true);
+
+    try {
+      await authService.logout();
+      // GoRouter redirige automáticamente a /login.
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Sesión cerrada localmente. '
+            'No se pudo confirmar el cierre en el servidor.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoggingOut = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(
-          index: selectedIndex,
-          children: [
-            _buildHome(),
-            _buildModulesPage(),
-            _buildPlaceholder(Icons.notifications_none, 'Notificaciones'),
-            _buildPlaceholder(Icons.person_outline, 'Mi perfil'),
-          ],
-        ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() => selectedIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Inicio',
+    return ListenableBuilder(
+      listenable: authService,
+      builder: (context, _) {
+        return Scaffold(
+          body: SafeArea(
+            child: IndexedStack(
+              index: selectedIndex,
+              children: [
+                _buildHome(),
+                _buildModulesPage(),
+                _buildPlaceholder(Icons.notifications_none, 'Notificaciones'),
+                _buildProfilePage(),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            label: 'Módulos',
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() => selectedIndex = index);
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Inicio',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.grid_view_outlined),
+                label: 'Módulos',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.notifications_outlined),
+                label: 'Avisos',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: 'Perfil',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_outlined),
-            label: 'Avisos',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            label: 'Perfil',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -172,15 +249,15 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 32),
           const Text(
-            'Bienvenido a',
+            'Bienvenido,',
             style: TextStyle(color: Color(0xFFCAD9E9), fontSize: 14),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'SIGMA Mobile',
-            style: TextStyle(
+          Text(
+            userName,
+            style: const TextStyle(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -214,8 +291,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Los datos estarán disponibles al '
-                    'conectar tu cuenta institucional.',
+                    'Consulta los módulos disponibles. '
+                    'Las actividades se mostrarán cuando '
+                    'se conecten sus servicios.',
                     style: TextStyle(color: Colors.black54, fontSize: 13),
                   ),
                 ],
@@ -330,7 +408,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Se mostrarán al integrar el backend',
+                'Las actividades aparecerán al integrar los módulos',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),
@@ -348,6 +426,91 @@ class _DashboardPageState extends State<DashboardPage> {
         _buildSectionTitle('Módulos de SIGMA'),
         const SizedBox(height: 16),
         _buildModuleGrid(),
+      ],
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildSectionTitle('Mi perfil'),
+        const SizedBox(height: 20),
+
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Color(0xFFE8F0F9),
+                  child: Icon(Icons.person, size: 38, color: AppTheme.primary),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  userName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(username, style: const TextStyle(color: Colors.black54)),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Card(
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('Usuario'),
+                subtitle: Text(username),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.email_outlined),
+                title: const Text('Correo electrónico'),
+                subtitle: Text(email),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings_outlined),
+                title: const Text('Roles asignados'),
+                subtitle: Text(
+                  roles.isEmpty ? 'Sin roles disponibles' : roles.join(', '),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        SizedBox(
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: isLoggingOut ? null : logout,
+            icon: isLoggingOut
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.logout),
+            label: Text(isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red.shade700,
+              side: BorderSide(color: Colors.red.shade300),
+            ),
+          ),
+        ),
       ],
     );
   }
