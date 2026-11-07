@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_mobile/app/theme/app_theme.dart';
-import 'package:sigma_mobile/features/auth/widgets/auth_text_field.dart';
+import 'package:sigma_mobile/core/config/app_config.dart';
+import 'package:sigma_mobile/core/widgets/sigma_widgets.dart';
+import 'package:sigma_mobile/features/settings/api_config_page.dart';
 
 class LoginFormCard extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -28,35 +30,17 @@ class _LoginFormCardState extends State<LoginFormCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final size = MediaQuery.sizeOf(context);
+    final isCompact = size.width < 360 || size.height < 700;
+
     final titleColor = isDark ? Colors.white : const Color(0xFF172B4D);
     final subtitleColor = isDark
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
-    final buttonBg = isDark ? AppTheme.accentGold : AppTheme.primary;
-    final buttonFg = isDark ? const Color(0xFF0A1931) : Colors.white;
 
-    return Container(
-      padding: const EdgeInsets.all(26),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : const Color(0xFFE2E8F0),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.35)
-                : const Color(0xFF0F172A).withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return SigmaCard(
+      padding: EdgeInsets.all(isCompact ? 14 : 18),
+      borderRadius: 18,
       child: Form(
         key: widget.formKey,
         child: Column(
@@ -65,21 +49,21 @@ class _LoginFormCardState extends State<LoginFormCard> {
             Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     color: isDark
                         ? AppTheme.accentGold.withValues(alpha: 0.14)
                         : AppTheme.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     Icons.lock_person_rounded,
-                    size: 20,
+                    size: 18,
                     color: isDark ? AppTheme.accentGold : AppTheme.primary,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,16 +71,17 @@ class _LoginFormCardState extends State<LoginFormCard> {
                       Text(
                         'Iniciar sesión',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: isCompact ? 17 : 18.5,
                           fontWeight: FontWeight.w800,
                           color: titleColor,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       Text(
                         'Credenciales institucionales',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 11.5,
                           color: subtitleColor,
                           fontWeight: FontWeight.w500,
                         ),
@@ -104,10 +89,22 @@ class _LoginFormCardState extends State<LoginFormCard> {
                     ],
                   ),
                 ),
+                IconButton(
+                  tooltip: 'Configurar URL de API',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: widget.isLoading
+                      ? null
+                      : () => showApiConfigSheet(context),
+                  icon: Icon(
+                    Icons.settings_ethernet_rounded,
+                    size: 20,
+                    color: isDark ? AppTheme.accentGold : AppTheme.primary,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 24),
-            AuthTextField(
+            const SizedBox(height: 14),
+            SigmaTextField(
               controller: widget.usernameController,
               label: 'Usuario',
               hint: 'Ej. jperez',
@@ -122,8 +119,8 @@ class _LoginFormCardState extends State<LoginFormCard> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-            AuthTextField(
+            const SizedBox(height: 10),
+            SigmaTextField(
               controller: widget.passwordController,
               label: 'Contraseña',
               prefixIcon: Icons.lock_outline_rounded,
@@ -133,6 +130,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
               autofillHints: const [AutofillHints.password],
               onFieldSubmitted: (_) => widget.onSubmit(),
               suffixIcon: IconButton(
+                visualDensity: VisualDensity.compact,
                 tooltip: _obscurePassword
                     ? 'Mostrar contraseña'
                     : 'Ocultar contraseña',
@@ -145,6 +143,7 @@ class _LoginFormCardState extends State<LoginFormCard> {
                   _obscurePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
+                  size: 19,
                   color: subtitleColor,
                 ),
               ),
@@ -155,40 +154,81 @@ class _LoginFormCardState extends State<LoginFormCard> {
                 return null;
               },
             ),
-            const SizedBox(height: 26),
-            SizedBox(
-              height: 54,
-              child: FilledButton.icon(
-                onPressed: widget.isLoading ? null : widget.onSubmit,
-                style: FilledButton.styleFrom(
-                  backgroundColor: buttonBg,
-                  foregroundColor: buttonFg,
-                  disabledBackgroundColor: buttonBg.withValues(alpha: 0.55),
-                  disabledForegroundColor: buttonFg.withValues(alpha: 0.8),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                icon: widget.isLoading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: buttonFg,
+            const SizedBox(height: 14),
+            SigmaPrimaryButton(
+              label: 'Ingresar a SIGMA',
+              loadingLabel: 'Iniciando sesión...',
+              icon: Icons.login_rounded,
+              height: 44,
+              isLoading: widget.isLoading,
+              onPressed: widget.onSubmit,
+            ),
+            const SizedBox(height: 10),
+            ValueListenableBuilder<String>(
+              valueListenable: AppConfig.apiBaseUrlNotifier,
+              builder: (context, currentUrl, _) {
+                final isCustom = AppConfig.isCustomUrl;
+                return InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: widget.isLoading
+                      ? null
+                      : () => showApiConfigSheet(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF0E1729)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF26354D)
+                            : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.dns_outlined,
+                          size: 14,
+                          color: isDark
+                              ? AppTheme.accentGold
+                              : AppTheme.primary,
                         ),
-                      )
-                    : const Icon(Icons.login_rounded),
-                label: Text(
-                  widget.isLoading ? 'Iniciando sesión...' : 'Ingresar a SIGMA',
-                ),
-              ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            isCustom
+                                ? 'Servidor SIGMA (Personalizado)'
+                                : 'Servidor SIGMA conectado',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: subtitleColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Configurar',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppTheme.accentGold
+                                : AppTheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

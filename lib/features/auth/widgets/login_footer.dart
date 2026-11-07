@@ -17,12 +17,12 @@ class LoginFooter extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.04)
                 : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.06)
@@ -35,26 +35,30 @@ class LoginFooter extends StatelessWidget {
             children: [
               Icon(
                 Icons.verified_user_rounded,
-                size: 16,
+                size: 14,
                 color: isDark ? AppTheme.accentGold : AppTheme.primary,
               ),
-              const SizedBox(width: 6),
-              Text(
-                'Sistema Institucional de Gestión',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: primaryText,
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  'Sistema Institucional de Gestión',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: primaryText,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 5),
         Text(
           'Acceso exclusivo para personal autorizado • ENDE CORANI',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11.5, color: secondaryText),
+          style: TextStyle(fontSize: 10.5, color: secondaryText),
         ),
       ],
     );

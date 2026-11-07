@@ -20,10 +20,17 @@ class DioClient {
       ),
     );
 
+    // Sincroniza dinámicamente el baseUrl si el usuario lo cambia desde ajustes
+    AppConfig.apiBaseUrlNotifier.addListener(() {
+      dio.options.baseUrl = AppConfig.apiBaseUrl;
+    });
+
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           try {
+            options.baseUrl = AppConfig.apiBaseUrl;
+
             final token = await AuthService.instance.getAccessToken();
 
             if (token == null) {

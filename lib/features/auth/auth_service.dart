@@ -22,14 +22,46 @@ class AuthService extends ChangeNotifier {
   );
 
   bool _isAuthenticated = false;
+  bool _hasCompletedOnboarding = false;
   Map<String, dynamic>? _user;
   DateTime? _expiresAt;
   Future<String?>? _refreshing;
 
   bool get isAuthenticated => _isAuthenticated;
+  bool get hasCompletedOnboarding => _hasCompletedOnboarding;
   Map<String, dynamic>? get user => _user;
 
+  String _onboardingKey() {
+    final identifier =
+        _user?['username']?.toString().trim() ??
+        _user?['id']?.toString().trim() ??
+        'default';
+    return 'sigma_welcome_completed_$identifier';
+  }
+
+  Future<void> _loadOnboardingState() async {
+    final value = await _storage.read(key: _onboardingKey());
+    _hasCompletedOnboarding = value == 'true';
+  }
+
+  /// Marca como completada la bienvenida inicial del usuario actual.
+  Future<void> completeOnboarding() async {
+    await _storage.write(key: _onboardingKey(), value: 'true');
+    _hasCompletedOnboarding = true;
+    notifyListeners();
+  }
+
+  /// Permite volver a mostrar la pantalla de bienvenida si se requiere.
+  Future<void> resetOnboarding() async {
+    await _storage.delete(key: _onboardingKey());
+    _hasCompletedOnboarding = false;
+    notifyListeners();
+  }
+
   Future<void> initialize() async {
+    _http.options.baseUrl = AppConfig.apiBaseUrl;
+    AppConfig.apiBaseUrlNotifier.addListener(_syncBaseUrl);
+
     try {
       final token = await getAccessToken();
 
@@ -47,10 +79,15 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  void _syncBaseUrl() {
+    _http.options.baseUrl = AppConfig.apiBaseUrl;
+  }
+
   Future<void> login({
     required String username,
     required String password,
   }) async {
+    _http.options.baseUrl = AppConfig.apiBaseUrl;
     final response = await _http.post(
       AppConfig.loginPath,
       data: {'username': username, 'password': password},
@@ -64,6 +101,7 @@ class AuthService extends ChangeNotifier {
 
     if (returnedUser is Map) {
       _user = Map<String, dynamic>.from(returnedUser);
+      await _loadOnboardingState();
     } else {
       await loadUser();
     }
@@ -182,6 +220,7 @@ class AuthService extends ChangeNotifier {
     );
 
     _user = _responseData(response.data);
+    await _loadOnboardingState();
     _isAuthenticated = true;
     notifyListeners();
   }
@@ -211,6 +250,7 @@ class AuthService extends ChangeNotifier {
       _expiresAt = null;
       _user = null;
       _isAuthenticated = false;
+      _hasCompletedOnboarding = false;
 
       notifyListeners();
     }

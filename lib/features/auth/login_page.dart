@@ -1,19 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sigma_mobile/app/theme/app_theme.dart';
+import 'package:sigma_mobile/core/widgets/sigma_widgets.dart';
 import 'package:sigma_mobile/features/auth/auth_service.dart';
 import 'package:sigma_mobile/features/auth/widgets/login_footer.dart';
 import 'package:sigma_mobile/features/auth/widgets/login_form_card.dart';
 import 'package:sigma_mobile/features/auth/widgets/login_header.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -85,6 +87,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final size = MediaQuery.sizeOf(context);
+    final isCompact = size.width < 360 || size.height < 700;
 
     return Scaffold(
       body: Stack(
@@ -136,76 +140,31 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 // Barra superior con botón para alternar modo Normal / Dark
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  child: Row(
+                  padding: EdgeInsets.fromLTRB(
+                    isCompact ? 14 : 20,
+                    6,
+                    isCompact ? 14 : 20,
+                    0,
+                  ),
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Material(
-                        color: isDark
-                            ? AppTheme.darkSurface
-                            : Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () => AppTheme.toggleTheme(context),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.10)
-                                    : const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isDark
-                                      ? Icons.light_mode_rounded
-                                      : Icons.dark_mode_rounded,
-                                  size: 16,
-                                  color: isDark
-                                      ? AppTheme.accentGold
-                                      : AppTheme.primary,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  isDark ? 'Modo claro' : 'Modo oscuro',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white
-                                        : AppTheme.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    children: [ThemeToggleButton()],
                   ),
                 ),
                 Expanded(
                   child: Center(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isCompact ? 14 : 20,
+                        vertical: 8,
                       ),
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 420),
+                        constraints: const BoxConstraints(maxWidth: 380),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             const LoginHeader(),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 12),
                             LoginFormCard(
                               formKey: _formKey,
                               usernameController: _usernameController,
@@ -213,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                               isLoading: _loading,
                               onSubmit: _login,
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 12),
                             const LoginFooter(),
                           ],
                         ),
