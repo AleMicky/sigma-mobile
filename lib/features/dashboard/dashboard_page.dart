@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sigma_mobile/app/theme/app_theme.dart';
 import 'package:sigma_mobile/core/config/app_config.dart';
 import 'package:sigma_mobile/core/widgets/sigma_widgets.dart';
@@ -21,15 +22,24 @@ class _DashboardPageState extends State<DashboardPage> {
   final modules = const [
     _Module(
       title: 'Control de salidas',
-      subtitle: 'Autorizaciones y rutas',
+      subtitle: 'Viajes y comisiones vehiculares',
       icon: Icons.route_rounded,
-      color: Color(0xFF2563EB),
+      color: Color(0xFF0284C7),
+      route: '/salidas-vehiculares',
     ),
     _Module(
-      title: 'Gestión vehicular',
-      subtitle: 'Flota y asignaciones',
+      title: 'Solicitud vehicular',
+      subtitle: 'Solicitudes y seguimiento',
       icon: Icons.directions_car_rounded,
       color: Color(0xFF0F766E),
+      route: '/solicitudes-vehiculares',
+    ),
+    _Module(
+      title: 'Control de portería',
+      subtitle: 'Registro vehicular y garita',
+      icon: Icons.verified_user_rounded,
+      color: Color(0xFF2563EB),
+      route: '/porteria',
     ),
     _Module(
       title: 'Mantenimiento',
@@ -460,7 +470,13 @@ class _DashboardPageState extends State<DashboardPage> {
     return SigmaCard(
       padding: EdgeInsets.all(compact ? 10 : 12),
       borderRadius: 14,
-      onTap: () => showPending(module.title),
+      onTap: () {
+        if (module.route != null) {
+          context.push(module.route!);
+        } else {
+          showPending(module.title);
+        }
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -787,11 +803,13 @@ class _Module {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final String? route;
 
   const _Module({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.route,
   });
 }
